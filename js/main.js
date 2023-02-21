@@ -82,27 +82,27 @@ function handleClickNewCatForm(event) {
   }
 }
 //Adicionar nuevo gatito
-function addNewKitten(event) {
-  event.preventDefault();
-  const valueDesc = inputDesc.value;
-  const valuePhoto = inputPhoto.value;
-  const valueName = inputName.value;
-  const valueRace = inputRace.value;
-  const newKittenDataObject = {
-    desc: valueDesc,
-    name: valueName,
-    image: valuePhoto,
-    race: valueRace,
-  };
-  emptyInputs(event);
-  renderKittenList(kittenDataList);
-  if (valueDesc === '' || valuePhoto === '' || valueName === '') {
-    labelMessageError.innerHTML = '¡Uy! parece que has olvidado algo';
-  } else if (valueDesc !== '' && valuePhoto !== '' && valueName !== '') {
-    labelMessageError.innerHTML = 'Mola! Un nuevo gatito en Adalab!';
-    kittenDataList.push(newKittenDataObject);
-  }
-}
+// function addNewKitten(event) {
+//   event.preventDefault();
+//   const valueDesc = inputDesc.value;
+//   const valuePhoto = inputPhoto.value;
+//   const valueName = inputName.value;
+//   const valueRace = inputRace.value;
+//   const newKittenDataObject = {
+//     desc: valueDesc,
+//     name: valueName,
+//     image: valuePhoto,
+//     race: valueRace,
+//   };
+//   emptyInputs(event);
+//   renderKittenList(kittenDataList);
+//   if (valueDesc === '' || valuePhoto === '' || valueName === '') {
+//     labelMessageError.innerHTML = '¡Uy! parece que has olvidado algo';
+//   } else if (valueDesc !== '' && valuePhoto !== '' && valueName !== '') {
+//     labelMessageError.innerHTML = 'Mola! Un nuevo gatito en Adalab!';
+//     kittenDataList.push(newKittenDataObject);
+//   }
+// }
 
 //Cancelar la búsqueda de un gatito
 function cancelNewKitten(event) {
@@ -148,18 +148,71 @@ function filterKitten(event) {
 
 const GITHUB_USER = 'NataliaPuertac';
 const SERVER_URL = `https://dev.adalab.es/api/kittens/${GITHUB_USER}`;
-//let kittenDataList = [];
 
-fetch(SERVER_URL, {
-  method: 'GET',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-}).then((response) => response.json())
-  .then((data) => {
-    kittenDataList = data.results
-    renderKittenList(kittenDataList)
-  });
+const kittenListStored = JSON.parse(localStorage.getItem('kittensList'));
+
+if (kittenListStored) {
+  renderKittenList(kittenListStored);
+} else {
+  fetch(SERVER_URL, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      localStorage.setItem('kittensList', JSON.stringify(data.results));
+      kittenDataList = data.results;
+      renderKittenList(kittenDataList);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+function addNewKitten(event) {
+  event.preventDefault();
+  const valueDesc = inputDesc.value;
+  const valuePhoto = inputPhoto.value;
+  const valueName = inputName.value;
+  const valueRace = inputRace.value;
+  const newKittenDataObject = {
+    desc: valueDesc,
+    name: valueName,
+    image: valuePhoto,
+    race: valueRace,
+  };
+
+  fetch(`https://dev.adalab.es/api/kittens/${GITHUB_USER}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newKittenDataObject),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      if (data.success) {
+        renderKittenList(newKittenDataObject);
+        localStorage.setItem('newCat', JSON.stringify(newKittenDataObject));
+        renderKittenList(kittenListStored);
+      }
+      // else {
+      //   //     .catch((error) => {
+      //   //     console.error(error);
+      //   // });
+      // }
+    });
+
+  emptyInputs(event);
+  renderKittenList(kittenDataList);
+  if (valueDesc === '' || valuePhoto === '' || valueName === '') {
+    labelMessageError.innerHTML = '¡Uy! parece que has olvidado algo';
+  } else if (valueDesc !== '' && valuePhoto !== '' && valueName !== '') {
+    labelMessageError.innerHTML = 'Mola! Un nuevo gatito en Adalab!';
+    kittenDataList.push(newKittenDataObject);
+  }
+}
 
 //Eventos
 linkNewFormElememt.addEventListener('click', handleClickNewCatForm);
