@@ -35,32 +35,63 @@ const input_search_race = document.querySelector('.js_in_search_race');
 //   race: 'Maine Coon',
 // };
 
-//const kittenDataList = [kittenData_1, kittenData_2, kittenData_3];
+// const kittenDataList = [kittenData_1, kittenData_2, kittenData_3];
 let kittenDataList = [];
 
 //Funciones
+// function renderKitten(kittenData) {
+//   const kitten = `<li class="card">
+//     <article>
+//       <img
+//         class="card_img"
+//         src=${kittenData.image}
+//         alt="gatito"
+//       />
+//       <h3 class="card_title">${kittenData.name}</h3>
+//       <h3 class="card_race">${kittenData.race}</h3>
+//       <p class="card_description">
+//       ${kittenData.desc}
+//       </p>
+//     </article>
+//     </li>`;
+//   return kitten;
+// }
+
+// cambiar la función renderKitten usando los métodos del DOM avanzadndo
+
 function renderKitten(kittenData) {
-  const kitten = `<li class="card">
-    <article>
-      <img
-        class="card_img"
-        src=${kittenData.image}
-        alt="gatito"
-      />
-      <h3 class="card_title">${kittenData.name}</h3>
-      <h3 class="card_race">${kittenData.race}</h3>
-      <p class="card_description">
-      ${kittenData.desc}
-      </p>
-    </article>
-    </li>`;
+  const kitten = document.createElement('li');
+  kitten.setAttribute('class', "card")
+  listElement.appendChild(kitten);
+  const kittenArticle = document.createElement('article');
+  kitten.appendChild(kittenArticle);
+  const imgKitten = document.createElement('img');
+  const titleName = document.createElement('h3');
+  const titleRace = document.createElement('h3');
+  const textDesc = document.createElement('p');
+  kittenArticle.appendChild(imgKitten);
+  kittenArticle.appendChild(titleName);
+  kittenArticle.appendChild(titleRace);
+  kittenArticle.appendChild(textDesc);
+  imgKitten.setAttribute('src', kittenData.image);
+  imgKitten.setAttribute('class', "card_img");
+  imgKitten.setAttribute('alt', "gatito");
+  const titleNameText = document.createTextNode(kittenData.name);
+  titleName.appendChild(titleNameText);
+  titleName.setAttribute('class', "card_title");
+  const titleRaceText = document.createTextNode(kittenData.race);
+  titleRace.appendChild(titleRaceText);
+  titleRace.setAttribute('class', "card_race");
+  const descText = document.createTextNode(kittenData.desc);
+  textDesc.appendChild(descText);
+  textDesc.setAttribute('class', "card_description")
   return kitten;
 }
 
-function renderKittenList(kittenDataList) {
+function renderKittenList(kittenListStored) {
   listElement.innerHTML = '';
-  for (const kittenItem of kittenDataList) {
-    listElement.innerHTML += renderKitten(kittenItem);
+  for (const kittenItem of kittenListStored) {
+    listElement.appendChild(renderKitten(kittenItem));
   }
 }
 
@@ -82,27 +113,27 @@ function handleClickNewCatForm(event) {
   }
 }
 //Adicionar nuevo gatito
-// function addNewKitten(event) {
-//   event.preventDefault();
-//   const valueDesc = inputDesc.value;
-//   const valuePhoto = inputPhoto.value;
-//   const valueName = inputName.value;
-//   const valueRace = inputRace.value;
-//   const newKittenDataObject = {
-//     desc: valueDesc,
-//     name: valueName,
-//     image: valuePhoto,
-//     race: valueRace,
-//   };
-//   emptyInputs(event);
-//   renderKittenList(kittenDataList);
-//   if (valueDesc === '' || valuePhoto === '' || valueName === '') {
-//     labelMessageError.innerHTML = '¡Uy! parece que has olvidado algo';
-//   } else if (valueDesc !== '' && valuePhoto !== '' && valueName !== '') {
-//     labelMessageError.innerHTML = 'Mola! Un nuevo gatito en Adalab!';
-//     kittenDataList.push(newKittenDataObject);
-//   }
-// }
+function addNewKitten(event) {
+  event.preventDefault();
+  const valueDesc = inputDesc.value;
+  const valuePhoto = inputPhoto.value;
+  const valueName = inputName.value;
+  const valueRace = inputRace.value;
+  const newKittenDataObject = {
+    desc: valueDesc,
+    name: valueName,
+    image: valuePhoto,
+    race: valueRace,
+  };
+  emptyInputs(event);
+  renderKittenList(kittenDataList);
+  if (valueDesc === '' || valuePhoto === '' || valueName === '') {
+    labelMessageError.innerHTML = '¡Uy! parece que has olvidado algo';
+  } else if (valueDesc !== '' && valuePhoto !== '' && valueName !== '') {
+    labelMessageError.innerHTML = 'Mola! Un nuevo gatito en Adalab!';
+    kittenDataList.push(newKittenDataObject);
+  }
+}
 
 //Cancelar la búsqueda de un gatito
 function cancelNewKitten(event) {
@@ -131,7 +162,7 @@ function filterKitten(event) {
   const raceSearchText = input_search_race.value;
 
   listElement.innerHTML = '';
-  const newFilterKitten = kittenDataList
+  const newFilterKitten = kittenListStored
     .filter((kitten) =>
       kitten.desc.toLowerCase().includes(descrSearchText.toLowerCase())
     )
@@ -150,6 +181,7 @@ const GITHUB_USER = 'NataliaPuertac';
 const SERVER_URL = `https://dev.adalab.es/api/kittens/${GITHUB_USER}`;
 
 const kittenListStored = JSON.parse(localStorage.getItem('kittensList'));
+console.log(kittenListStored);
 
 if (kittenListStored) {
   renderKittenList(kittenListStored);
@@ -171,48 +203,53 @@ if (kittenListStored) {
     });
 }
 
-function addNewKitten(event) {
-  event.preventDefault();
-  const valueDesc = inputDesc.value;
-  const valuePhoto = inputPhoto.value;
-  const valueName = inputName.value;
-  const valueRace = inputRace.value;
-  const newKittenDataObject = {
-    desc: valueDesc,
-    name: valueName,
-    image: valuePhoto,
-    race: valueRace,
-  };
 
-  fetch(`https://dev.adalab.es/api/kittens/${GITHUB_USER}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(newKittenDataObject),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log(data);
-      if (data.success) {
-        renderKittenList(newKittenDataObject);
-        localStorage.setItem('newCat', JSON.stringify(newKittenDataObject));
-        renderKittenList(kittenListStored);
-      }
-      // else {
-      //   //     .catch((error) => {
-      //   //     console.error(error);
-      //   // });
-      // }
-    });
+//BONUS
 
-  emptyInputs(event);
-  renderKittenList(kittenDataList);
-  if (valueDesc === '' || valuePhoto === '' || valueName === '') {
-    labelMessageError.innerHTML = '¡Uy! parece que has olvidado algo';
-  } else if (valueDesc !== '' && valuePhoto !== '' && valueName !== '') {
-    labelMessageError.innerHTML = 'Mola! Un nuevo gatito en Adalab!';
-    kittenDataList.push(newKittenDataObject);
-  }
-}
+// function addNewKitten(event) {
+//   event.preventDefault();
+//   const valueDesc = inputDesc.value;
+//   const valuePhoto = inputPhoto.value;
+//   const valueName = inputName.value;
+//   const valueRace = inputRace.value;
+//   const newKittenDataObject = {
+//     desc: valueDesc,
+//     name: valueName,
+//     image: valuePhoto,
+//     race: valueRace,
+//   };
+
+//   fetch(`https://dev.adalab.es/api/kittens/${GITHUB_USER}`, {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify(newKittenDataObject),
+//   })
+//     .then((response) => response.json())
+//     .then((data) => {
+//       console.log(data);
+//       if (data.success) {
+//         renderKittenList(newKittenDataObject);
+//         localStorage.setItem('newCat', JSON.stringify(newKittenDataObject));
+//         renderKittenList(kittenListStored);
+//       }
+//       // else {
+//       //   //     .catch((error) => {
+//       //   //     console.error(error);
+//       //   // });
+//       // }
+//     });
+
+//   emptyInputs(event);
+//   renderKittenList(kittenDataList);
+//   if (valueDesc === '' || valuePhoto === '' || valueName === '') {
+//     labelMessageError.innerHTML = '¡Uy! parece que has olvidado algo';
+//   } else if (valueDesc !== '' && valuePhoto !== '' && valueName !== '') {
+//     labelMessageError.innerHTML = 'Mola! Un nuevo gatito en Adalab!';
+//     kittenDataList.push(newKittenDataObject);
+//   }
+// }
+
+// cambiar a DOM avanzado
 
 //Eventos
 linkNewFormElememt.addEventListener('click', handleClickNewCatForm);
